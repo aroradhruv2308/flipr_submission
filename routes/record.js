@@ -90,4 +90,11 @@ recordRoutes.route("/locations/:id").post(function (req, response) {
     
  });
 
+  // Task-2
+  recordRoutes.route("/locations-coordinates").post(function (req, response) {
+  let addresses = req.body.addresses;
+  response.send(addresses);
+  console.log(addresses);
+ });
+
  module.exports = recordRoutes;
