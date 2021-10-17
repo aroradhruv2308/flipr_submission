@@ -1,4 +1,5 @@
 const express = require("express");
+const request = require("request");
 const recordRoutes = express.Router();
 
 const dbo = require("../db/conn");
@@ -31,20 +32,7 @@ recordRoutes.route("/get-status").get(function (req, res) {
     })
     
 });
-
-// This section will help you get a single record by id
-// recordRoutes.route("/record/:id").get(function (req, res) {
-//   let db_connect = dbo.getDb();
-//   let myquery = { _id: ObjectId( req.params.id )};
-//   db_connect
-//       .collection("records")
-//       .findOne(myquery, function (err, result) {
-//         if (err) throw err;
-//         res.json(result);
-//       });
-// });
-
-// This section will help you create a new record.
+//task 1
 recordRoutes.route("/locations/:id").post(function (req, response) {
  let db_connect = dbo.getDb();
  let db_url = req.body;
@@ -91,10 +79,54 @@ recordRoutes.route("/locations/:id").post(function (req, response) {
  });
 
   // Task-2
+  
   recordRoutes.route("/locations-coordinates").post(function (req, response) {
+  let apiKey = "AIzaSyA5bwbEsAOUMOI4RK2zXcIayG4vjuQSpcw" 
   let addresses = req.body.addresses;
-  response.send(addresses);
-  console.log(addresses);
+  let coordinates = {};
+  let promises = [];
+  for(let index = 0;index<addresses.length;index++)
+  {
+    let currAddress = addresses[index];
+    let targetUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${currAddress}&key=${apiKey}`;
+    const pobj = new Promise((resolve,reject)=>{
+      request(targetUrl, function (err, response, body) {
+        let geoLocation = JSON.parse(body);
+        // let mssg = `lat: ${geoLocation.results[0].geometry.location.lat} long: ${geoLocation.results[0].geometry.location.lng}`;
+        let mssg = {
+          lat: `${geoLocation.results[0].geometry.location.lat}`,
+          long: `${geoLocation.results[0].geometry.location.lng}`
+        }
+
+        resolve(mssg);
+      })
+    })
+    promises.push(pobj);
+
+
+  
+  }
+
+  Promise.all(promises)
+  .then((results) => {
+    console.log(typeof(results))
+    console.log(results)
+    let finalResponse = [];
+    for (var i = 0; i < results.length; i++)
+    {
+      finalResponse.push({
+      "add" : addresses[i],
+      "location":[results[i]["lat"] , results[i]["long"]]
+      });
+    }
+    console.log(finalResponse)
+    response.send(finalResponse)
+    
+  })
+  .catch((e) => {
+      // Handle errors here
+  });
+   console.log(coordinates);
  });
 
  module.exports = recordRoutes;
