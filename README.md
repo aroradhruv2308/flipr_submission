@@ -30,9 +30,9 @@ resolved using workers but this can take some more time as I have never worked w
 
     https://flipr-submission.herokuapp.com/locations/devices?name=status
 
-Path parameters - Name of collection 1 (devices in our case)
-Query parameters - Name of collection 2 (status in our case)
-body - mongodb URI
+ path parameters - Name of collection 1 (devices in our case). <br />
+ query parameters - Name of collection 2 (status in our case). <br />
+ body - mongodb URI. <br />
 
 ### Task 2
 
