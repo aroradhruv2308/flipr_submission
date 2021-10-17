@@ -117,8 +117,8 @@ recordRoutes.route("/locations/:id").post(function (req, response) {
     }
     response.send(finalResponse) 
   })
-  .catch((e) => {
-      // Handle errors here
+  .catch((err) => {
+      console.log(err);
   });
  });
 
