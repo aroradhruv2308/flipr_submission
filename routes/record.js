@@ -3,10 +3,10 @@ const request = require("request");
 const recordRoutes = express.Router();
 
 const dbo = require("../db/conn");
-const ObjectId = require("mongodb").ObjectId;
 
 
-// This section will help you get a list of all the records.
+// This section will help you get a list of all the records 
+// from devices collection for visualizing data.
 recordRoutes.route("/get-devices").get(function (req, res) {
   let db_connect = dbo.getDb("_CONCOX_");
   db_connect
@@ -20,7 +20,8 @@ recordRoutes.route("/get-devices").get(function (req, res) {
     });
 });
 
-// This section will help you get a list of all the records.
+// This section will help you get a list of all the records
+// from status collection for visualizing data.
 recordRoutes.route("/get-status").get(function (req, res) {
   let db_connect = dbo.getDb("_CONCOX_");
   db_connect
@@ -32,19 +33,20 @@ recordRoutes.route("/get-status").get(function (req, res) {
     })
     
 });
-//task 1
+
+/*****************************Task 1*******************************/
 recordRoutes.route("/locations/:id").post(function (req, response) {
  let db_connect = dbo.getDb();
  let db_url = req.body;
- let collection_1 = req.params.id;
- let collection_2 = req.query.name;
+ let first_collection = req.params.id;
+ let second_collection = req.query.name;
 
  db_connect
- .collection(`${collection_1}`)
+ .collection(`${first_collection}`)
  .aggregate([
      { $lookup:
       {
-        from: 'status',
+        from: `${second_collection}`,
         as: 'statusDetail',
         let: { id: "$id" },
         pipeline:[
@@ -64,8 +66,6 @@ recordRoutes.route("/locations/:id").post(function (req, response) {
  .toArray(function(err, res) {
     if (err) throw err;
     let ans = {};
-    // ans[key] = [{lat,lon},{lat,long},{}]
-    console.log("Checkpoint#1")
     for(let i=0;i<res.length;i++){
         let arr = [];
         for(let j=0;j<res[i].statusDetail.length;j++){
@@ -73,12 +73,14 @@ recordRoutes.route("/locations/:id").post(function (req, response) {
         }
         ans[res[i].id] = arr;
     }
+    response.setHeader("Name", "Dhruv Arora");
+    response.setHeader("Contact", "aroradhruv7058@gmail.com");
     response.send(ans);
   });
     
  });
 
-  // Task-2
+  /****************************Task 2*******************************************/
   
   recordRoutes.route("/locations-coordinates").post(function (req, response) {
   let apiKey = "AIzaSyA5bwbEsAOUMOI4RK2zXcIayG4vjuQSpcw" 
@@ -92,25 +94,19 @@ recordRoutes.route("/locations/:id").post(function (req, response) {
     const pobj = new Promise((resolve,reject)=>{
       request(targetUrl, function (err, response, body) {
         let geoLocation = JSON.parse(body);
-        // let mssg = `lat: ${geoLocation.results[0].geometry.location.lat} long: ${geoLocation.results[0].geometry.location.lng}`;
-        let mssg = {
+        let msg = {
           lat: `${geoLocation.results[0].geometry.location.lat}`,
           long: `${geoLocation.results[0].geometry.location.lng}`
         }
 
-        resolve(mssg);
+        resolve(msg);
       })
     })
     promises.push(pobj);
-
-
-  
   }
 
   Promise.all(promises)
   .then((results) => {
-    console.log(typeof(results))
-    console.log(results)
     let finalResponse = [];
     for (var i = 0; i < results.length; i++)
     {
@@ -119,14 +115,11 @@ recordRoutes.route("/locations/:id").post(function (req, response) {
       "location":[results[i]["lat"] , results[i]["long"]]
       });
     }
-    console.log(finalResponse)
-    response.send(finalResponse)
-    
+    response.send(finalResponse) 
   })
   .catch((e) => {
       // Handle errors here
   });
-   console.log(coordinates);
  });
 
  module.exports = recordRoutes;
